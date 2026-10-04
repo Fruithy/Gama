@@ -82,7 +82,7 @@ export default async function DailyPage() {
         </div>
         <p className="mt-3 rounded-xl bg-black/30 px-3 py-2 text-xs text-white/85">🌍 Same level for everyone on Earth today. Unlimited attempts — only your best counts.</p>
         <Link href={`/games/${game.slug}?mode=daily`} className={buttonClass("primary", "xl", "mt-4 w-full")}>
-          ▶ {mine ? "Improve your score" : "Play today's challenge"}
+          ▶ {mine ? "Beat your best" : "Play daily"}
         </Link>
       </div>
 

@@ -80,7 +80,7 @@ export abstract class CanvasGame implements GameRuntime {
   private actions = 0;
   private peakAps = 0;
   private checkpoints: Array<[number, number]> = [];
-  private input = { pointerDowns: 0, keyDowns: 0, rejectedMultiTouch: 0, rejectedFast: 0 };
+  private inputStats = { pointerDowns: 0, keyDowns: 0, rejectedMultiTouch: 0, rejectedFast: 0 };
   private gameOverCbs: Array<(r: GameResult) => void> = [];
   private lastHud = "";
   private lastHudAt = 0;
@@ -264,7 +264,7 @@ export abstract class CanvasGame implements GameRuntime {
     this.peakAps = 0;
     this.actionTimes = [];
     this.checkpoints = [];
-    this.input = { pointerDowns: 0, keyDowns: 0, rejectedMultiTouch: 0, rejectedFast: 0 };
+    this.inputStats = { pointerDowns: 0, keyDowns: 0, rejectedMultiTouch: 0, rejectedFast: 0 };
     this.pendingResult = null;
     this.endTimer = 0;
     this.pointerDown = false;
@@ -299,7 +299,7 @@ export abstract class CanvasGame implements GameRuntime {
       peakActionsPerSecond: this.peakAps,
       checkpoints: this.checkpoints.slice(),
       stats: { ...this.stats },
-      input: { ...this.input },
+      input: { ...this.inputStats },
     };
   }
 
@@ -350,14 +350,14 @@ export abstract class CanvasGame implements GameRuntime {
     const down = (e: PointerEvent) => {
       e.preventDefault();
       if (this.state !== "running") return;
-      this.input.pointerDowns++;
+      this.inputStats.pointerDowns++;
       if (!this.allowMultiTouch && this.activePointers.size > 0) {
-        this.input.rejectedMultiTouch++;
+        this.inputStats.rejectedMultiTouch++;
         return;
       }
       const now = this.elapsedMs;
       if (now - this.lastPressAt < this.minTapIntervalMs) {
-        this.input.rejectedFast++;
+        this.inputStats.rejectedFast++;
         return;
       }
       this.lastPressAt = now;
@@ -396,10 +396,10 @@ export abstract class CanvasGame implements GameRuntime {
       e.preventDefault();
       if (this.state !== "running") return;
       if (isDown) {
-        this.input.keyDowns++;
+        this.inputStats.keyDowns++;
         const now = this.elapsedMs;
         if (now - this.lastPressAt < this.minTapIntervalMs) {
-          this.input.rejectedFast++;
+          this.inputStats.rejectedFast++;
           return;
         }
         this.lastPressAt = now;

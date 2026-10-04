@@ -1,6 +1,6 @@
 import "server-only";
 import type { Db } from "@/lib/db";
-import { getGame } from "@/games/registry";
+import { allGames, getGame } from "@/games/registry";
 import { syncRegistry } from "./sync";
 
 export { syncRegistry };
@@ -25,17 +25,22 @@ export interface GameOverride {
   sortOrder: number;
 }
 
-const g = globalThis as unknown as { __faSynced?: Promise<void> };
+const g = globalThis as unknown as { __faSynced?: { key: string; done: Promise<void> } };
 
-/** Upsert registry → DB once per process. Idempotent; never clobbers admin edits. */
+/** Fingerprint of the registry: a new game or version bump triggers a re-sync (also under dev HMR). */
+const registryKey = () => allGames.map((x) => `${x.id}@${x.version}:${x.status}`).join("|");
+
+/** Upsert registry → DB once per process (per registry shape). Idempotent; never clobbers admin edits. */
 export function ensureSynced(db: Db): Promise<void> {
-  if (!g.__faSynced) {
-    g.__faSynced = syncRegistry(db).catch((e) => {
+  const key = registryKey();
+  if (!g.__faSynced || g.__faSynced.key !== key) {
+    const done = syncRegistry(db).catch((e) => {
       g.__faSynced = undefined;
       throw e;
     });
+    g.__faSynced = { key, done };
   }
-  return g.__faSynced;
+  return g.__faSynced.done;
 }
 
 export async function getOverrides(db: Db): Promise<Map<string, GameOverride>> {

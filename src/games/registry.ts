@@ -8,9 +8,25 @@
 import type { GameDefinition } from "./core/types";
 import { plannedGames } from "./planned";
 
+import perfectTap from "./perfect-tap/meta";
+import tapRush from "./tap-rush/meta";
+import stopTheBar from "./stop-the-bar/meta";
+import nailHit from "./nail-hit/meta";
+import safeTile from "./safe-tile/meta";
+import impossibleGrid from "./impossible-grid/meta";
+import ropeDrop from "./rope-drop/meta";
+import balanceBar from "./balance-bar/meta";
 import stackUp from "./stack-up/meta";
 
 const GAMES: GameDefinition[] = [
+  perfectTap,
+  tapRush,
+  stopTheBar,
+  nailHit,
+  safeTile,
+  impossibleGrid,
+  ropeDrop,
+  balanceBar,
   stackUp,
 ];
 

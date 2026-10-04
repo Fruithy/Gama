@@ -20,7 +20,15 @@ export async function hit(db: Db, key: string, limit: number, windowSec: number)
   return { allowed: count <= limit, count };
 }
 
-export async function enforce(db: Db, key: string, limit: number, windowSec: number, playerId?: string) {
+/** Scale all limits (e.g. RATE_LIMIT_MULTIPLIER=50 for load tests). Dev defaults to a loose 25×. */
+function multiplier(): number {
+  const env = Number(process.env.RATE_LIMIT_MULTIPLIER);
+  if (Number.isFinite(env) && env > 0) return env;
+  return process.env.NODE_ENV === "production" ? 1 : 25;
+}
+
+export async function enforce(db: Db, key: string, baseLimit: number, windowSec: number, playerId?: string) {
+  const limit = Math.ceil(baseLimit * multiplier());
   const r = await hit(db, key, limit, windowSec);
   if (!r.allowed) {
     if (r.count === limit + 1) {
@@ -36,7 +44,8 @@ export async function enforce(db: Db, key: string, limit: number, windowSec: num
 export const LIMITS = {
   runStart: { limit: 40, windowSec: 60 },
   runSubmit: { limit: 40, windowSec: 60 },
-  createPlayer: { limit: 10, windowSec: 3600 },
+  // Generous: many mobile users share one carrier IP (CGNAT).
+  createPlayer: { limit: 120, windowSec: 3600 },
   usernameCheck: { limit: 30, windowSec: 60 },
   profileUpdate: { limit: 20, windowSec: 3600 },
   challengeCreate: { limit: 30, windowSec: 3600 },
