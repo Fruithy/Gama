@@ -40,27 +40,28 @@ export function LeaderboardTabs({
 }) {
   const { player, flags } = usePlayer();
   const [tab, setTab] = useState<Tab>(initialTab);
-  const [data, setData] = useState<BoardResponse | null>(null);
-  const [error, setError] = useState(false);
   const country = player?.country ?? null;
+  const reqKey = `${gameId}|${tab}|${limit}|${country}|${refreshKey}`;
+  const [state, setState] = useState<{ key: string; data: BoardResponse | null; error: boolean }>({ key: "", data: null, error: false });
+  const [retries, setRetries] = useState(0);
+  const current = state.key === `${reqKey}|${retries}` ? state : null;
+  const data = current?.data ?? null;
+  const error = current?.error ?? false;
   const tabs: Tab[] = ["global", "today", "week", ...(country ? (["country"] as Tab[]) : []), ...(flags.friendSystem && player ? (["friends"] as Tab[]) : [])];
 
-  const load = useCallback(async () => {
-    setError(false);
-    setData(null);
+  const load = useCallback(() => {
+    const key = `${reqKey}|${retries}`;
     const board = tab === "country" ? "global" : tab;
     const qs = new URLSearchParams({ board, limit: String(limit) });
     if (tab === "country" && country) qs.set("country", country);
-    try {
-      setData(await api<BoardResponse>(`/api/leaderboards/${gameId}?${qs}`));
-    } catch {
-      setError(true);
-    }
-  }, [tab, gameId, limit, country]);
+    api<BoardResponse>(`/api/leaderboards/${gameId}?${qs}`)
+      .then((d) => setState({ key, data: d, error: false }))
+      .catch(() => setState({ key, data: null, error: true }));
+  }, [reqKey, retries, tab, gameId, limit, country]);
 
   useEffect(() => {
-    void load();
-  }, [load, refreshKey]);
+    load();
+  }, [load]);
 
   return (
     <div>
@@ -81,7 +82,7 @@ export function LeaderboardTabs({
       </div>
       {error ? (
         <EmptyState icon="📡" title="Leaderboard unavailable">
-          <button type="button" onClick={() => void load()} className="mt-2 font-bold text-volt underline">
+          <button type="button" onClick={() => setRetries((r) => r + 1)} className="mt-2 font-bold text-volt underline">
             Retry
           </button>
         </EmptyState>

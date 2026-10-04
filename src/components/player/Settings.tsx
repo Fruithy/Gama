@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useHydrated } from "@/lib/client/hooks";
+import { useRouter } from "next/navigation";
 import { usePlayer } from "@/components/providers/PlayerProvider";
 import { api, RequestError } from "@/lib/client/api";
 import { ALL_AVATARS } from "@/lib/players/avatar";
@@ -16,38 +18,42 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { cn } from "@/components/ui/cn";
 import { levelProgress } from "@/lib/xp/rules";
 
+function readHaptics() {
+  try {
+    return localStorage.getItem("fa:haptics") !== "0";
+  } catch {
+    return true;
+  }
+}
+
 export function Settings() {
+  const router = useRouter();
   const { player, setPlayer, refresh } = usePlayer();
-  const [name, setName] = useState("");
-  const [nameMsg, setNameMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const hydrated = useHydrated();
+  const [nameDraft, setName] = useState<string | null>(null);
+  const name = nameDraft ?? player?.username ?? "";
+  const [check, setCheck] = useState<{ name: string; ok: boolean; text: string } | null>(null);
   const [saving, setSaving] = useState(false);
   const [email, setEmail] = useState("");
   const [authMsg, setAuthMsg] = useState("");
-  const [sound, setSound] = useState(true);
-  const [haptic, setHaptic] = useState(true);
+  const [soundPref, setSound] = useState<boolean | null>(null);
+  const [hapticPref, setHaptic] = useState<boolean | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
-  useEffect(() => {
-    setSound(!getAudio().muted);
-    try {
-      setHaptic(localStorage.getItem("fa:haptics") !== "0");
-    } catch {
-      /* ignore */
-    }
-  }, []);
-  useEffect(() => {
-    if (player) setName(player.username);
-  }, [player]);
+  // Device preferences (localStorage) are read only after hydration.
+  const sound = soundPref ?? (hydrated ? !getAudio().muted : true);
+  const haptic = hapticPref ?? (hydrated ? readHaptics() : true);
 
-  // Live availability check (debounced).
+  // Username feedback: local rules instantly, availability from the server (debounced).
+  const local = validateUsername(name);
+  const unchanged = !player || name === player.username;
+  const nameMsg = check?.name === name && !check.ok && unchanged ? check : unchanged ? null : !local.ok ? { ok: false, text: local.message } : check?.name === name ? check : null;
   useEffect(() => {
-    if (!player || name === player.username) return setNameMsg(null);
-    const v = validateUsername(name);
-    if (!v.ok) return setNameMsg({ ok: false, text: v.message });
+    if (!player || name === player.username || !validateUsername(name).ok) return;
     const t = setTimeout(() => {
       api<{ available: boolean; message: string }>(`/api/username?name=${encodeURIComponent(name)}`)
-        .then((r) => setNameMsg({ ok: r.available, text: r.message }))
-        .catch(() => setNameMsg(null));
+        .then((r) => setCheck({ name, ok: r.available, text: r.message }))
+        .catch(() => {});
     }, 350);
     return () => clearTimeout(t);
   }, [name, player]);
@@ -57,9 +63,10 @@ export function Settings() {
     try {
       const r = await api<{ player: NonNullable<typeof player> }>("/api/me", { method: "PATCH", json: body });
       setPlayer(r.player);
+      setName(null);
       return true;
     } catch (e) {
-      setNameMsg({ ok: false, text: (e as RequestError).message });
+      setCheck({ name, ok: false, text: (e as RequestError).message });
       return false;
     } finally {
       setSaving(false);
@@ -172,7 +179,7 @@ export function Settings() {
             {!confirmDelete ? (
               <Button variant="ghost" size="sm" className="text-flare" onClick={() => setConfirmDelete(true)}>Delete account</Button>
             ) : (
-              <Button variant="danger" size="sm" onClick={async () => { await api("/api/me", { method: "DELETE" }); setPlayer(null); location.href = "/"; }}>
+              <Button variant="danger" size="sm" onClick={async () => { await api("/api/me", { method: "DELETE" }); setPlayer(null); router.replace("/"); router.refresh(); }}>
                 Permanently delete everything
               </Button>
             )}

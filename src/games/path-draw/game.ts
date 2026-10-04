@@ -194,7 +194,10 @@ class PathDraw extends CanvasGame {
       g.lineCap = "round";
       g.lineJoin = "round";
       g.beginPath();
-      pts.forEach((p, i) => (i ? g.lineTo(p.x, p.y) : g.moveTo(p.x, p.y)));
+      pts.forEach((p, i) => {
+        if (i) g.lineTo(p.x, p.y);
+        else g.moveTo(p.x, p.y);
+      });
       g.stroke();
       g.setLineDash([]);
     };
@@ -207,7 +210,10 @@ class PathDraw extends CanvasGame {
     g.lineWidth = Math.max(4, this.width * 0.25);
     g.strokeStyle = PALETTE.volt;
     g.beginPath();
-    for (let i = 0; i < pts.length && len[i] <= this.progress; i++) (i ? g.lineTo(pts[i].x, pts[i].y) : g.moveTo(pts[i].x, pts[i].y));
+    for (let i = 0; i < pts.length && len[i] <= this.progress; i++) {
+      if (i) g.lineTo(pts[i].x, pts[i].y);
+      else g.moveTo(pts[i].x, pts[i].y);
+    }
     g.stroke();
     const start = pts[0];
     const end = pts[pts.length - 1];

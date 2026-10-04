@@ -88,7 +88,7 @@ export function AdminApp() {
           className="mt-4 hidden text-xs text-muted underline md:block"
           onClick={async () => {
             await api("/api/admin/session", { json: { action: "logout" } });
-            location.href = "/";
+            router.push("/");
           }}
         >
           Sign out

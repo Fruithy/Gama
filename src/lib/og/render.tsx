@@ -46,7 +46,8 @@ export async function renderScoreCard(opts: {
   const font = await displayFont();
   const story = opts.format === "story";
   const og = opts.format === "og";
-  const scale = og ? 0.62 : 1;
+  const square = opts.format === "square";
+  const scale = og ? 0.62 : square ? 0.72 : 1;
   const [c1, c2] = opts.def.theme.bg;
 
   return new ImageResponse(
@@ -59,32 +60,33 @@ export async function renderScoreCard(opts: {
           flexDirection: og ? "row" : "column",
           alignItems: "center",
           justifyContent: "space-between",
-          padding: og ? 56 : 72,
+          padding: og || square ? 48 : 72,
           background: `linear-gradient(160deg, ${c1} 0%, ${c2} 55%, #0a0a0c 100%)`,
           color: "#fff",
           fontFamily: "Unbounded",
         }}
       >
-        <div style={{ display: "flex", flexDirection: "column", alignItems: og ? "flex-start" : "center", flex: og ? 1 : undefined }}>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: og ? "flex-start" : "center", ...(og ? { flex: 1 } : {}) }}>
           <div style={{ display: "flex", fontSize: 30 * scale + 8, letterSpacing: 4, color: "#d4ff3a", background: "rgba(0,0,0,0.45)", padding: "12px 26px", borderRadius: 999 }}>
             {opts.def.name.toUpperCase()}
           </div>
           {opts.username && <div style={{ display: "flex", marginTop: 28 * scale, fontSize: 40 * scale, opacity: 0.9 }}>{opts.username}</div>}
           <div style={{ display: "flex", fontSize: 44 * scale, marginTop: 8, opacity: 0.85 }}>{opts.headline}</div>
-          <div style={{ display: "flex", alignItems: "baseline", fontSize: (story ? 300 : 240) * scale, lineHeight: 1, marginTop: 10, letterSpacing: -10 * scale }}>
-            {opts.scoreText}
-            {opts.unit && <span style={{ fontSize: 60 * scale, marginLeft: 18, opacity: 0.8, letterSpacing: 0 }}>{opts.unit}</span>}
+          {/* Satori: every flex child must be an element (no mixed text + element children). */}
+          <div style={{ display: "flex", alignItems: "flex-end", marginTop: 10 }}>
+            <span style={{ fontSize: (story ? 300 : 240) * scale, lineHeight: 1, letterSpacing: -10 * scale }}>{opts.scoreText}</span>
+            {opts.unit ? <span style={{ fontSize: 60 * scale, marginLeft: 18, marginBottom: 24 * scale, opacity: 0.8 }}>{opts.unit}</span> : null}
           </div>
           {opts.rankLine && (
             <div style={{ display: "flex", marginTop: 18, fontSize: 46 * scale, background: "#d4ff3a", color: "#0a0a0c", padding: "14px 30px", borderRadius: 999 }}>{opts.rankLine}</div>
           )}
         </div>
         {/* eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text */}
-        <img src={art} width={story ? 760 : og ? 420 : 470} height={story ? 760 : og ? 420 : 470} style={{ borderRadius: 64, transform: "rotate(-4deg)", boxShadow: "0 30px 80px rgba(0,0,0,0.5)" }} />
+        <img src={art} width={story ? 760 : og ? 420 : 330} height={story ? 760 : og ? 420 : 330} style={{ borderRadius: 64, transform: "rotate(-4deg)", boxShadow: "0 30px 80px rgba(0,0,0,0.5)" }} />
         {!og && (
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-            <div style={{ display: "flex", fontSize: story ? 64 : 48 }}>{opts.cta ?? "You're not beating this."}</div>
-            <div style={{ display: "flex", marginTop: 18, fontSize: 30, opacity: 0.75, letterSpacing: 6 }}>{BRAND.name}</div>
+            <div style={{ display: "flex", fontSize: story ? 64 : 40, textAlign: "center", justifyContent: "center" }}>{opts.cta ?? "You're not beating this."}</div>
+            <div style={{ display: "flex", marginTop: story ? 18 : 10, fontSize: story ? 30 : 24, opacity: 0.75, letterSpacing: 6 }}>{BRAND.name}</div>
           </div>
         )}
       </div>

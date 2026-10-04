@@ -184,6 +184,13 @@ async function applyAcceptedRun(
 ): Promise<SubmitRunResponse> {
   const today = dayKey();
   const week = weekKey();
+  // Re-read (and lock) the mutable progression fields inside this transaction so
+  // concurrent submissions can't double-count streaks or "first play of day".
+  const fresh = await db.query<{ last_daily_day: string | null; daily_streak: number; last_play_day: string | null; xp: number; country: string | null }>(
+    "select last_daily_day::text, daily_streak, last_play_day::text, xp, country from profiles where id = $1 for update",
+    [player.id],
+  );
+  player = { ...player, ...fresh[0] };
   const country = player.country;
   // Higher-is-better zero scores don't go on boards (noise), but still count as plays.
   const rankable = def.scoreDirection === "lower" || r.score > 0;

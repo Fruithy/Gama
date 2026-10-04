@@ -60,7 +60,6 @@ export function PlayerProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    setFavorites(getLocalFavorites());
     const idle = (cb: () => void) =>
       "requestIdleCallback" in window ? (window as Window & { requestIdleCallback: (cb: () => void) => number }).requestIdleCallback(cb) : setTimeout(cb, 200);
     idle(() => void refresh());

@@ -22,12 +22,9 @@ export type SubmitState =
   | { state: "unranked"; message: string };
 
 function useCountUp(target: number, enabled: boolean) {
-  const [v, setV] = useState(enabled ? 0 : target);
+  const [v, setV] = useState(0);
   useEffect(() => {
-    if (!enabled) {
-      setV(target);
-      return;
-    }
+    if (!enabled) return;
     const start = performance.now();
     const dur = Math.min(900, 300 + target * 8);
     let raf = 0;
@@ -39,7 +36,7 @@ function useCountUp(target: number, enabled: boolean) {
     raf = requestAnimationFrame(step);
     return () => cancelAnimationFrame(raf);
   }, [target, enabled]);
-  return v;
+  return enabled ? v : target;
 }
 
 export function ResultPanel({

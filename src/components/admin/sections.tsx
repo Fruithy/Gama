@@ -13,21 +13,19 @@ import { Kpi, num, Panel, pct, secs, SmallButton, Toggle } from "./ui";
 /* eslint-disable @typescript-eslint/no-explicit-any -- admin tables render loosely-typed SQL rows */
 
 function useAdmin<T>(path: string | null) {
-  const [data, setData] = useState<T | null>(null);
-  const [error, setError] = useState("");
-  const load = useCallback(async () => {
+  const [state, setState] = useState<{ path: string | null; data: T | null; error: string }>({ path: null, data: null, error: "" });
+  const load = useCallback(() => {
     if (!path) return;
-    setError("");
-    try {
-      setData(await api<T>(path));
-    } catch (e) {
-      setError((e as Error).message);
-    }
+    api<T>(path)
+      .then((d) => setState({ path, data: d, error: "" }))
+      .catch((e) => setState({ path, data: null, error: (e as Error).message }));
   }, [path]);
   useEffect(() => {
-    void load();
+    load();
   }, [load]);
-  return { data, error, reload: load };
+  // Keep showing the previous data while a refetch of the SAME resource runs; reset when the resource changes.
+  const fresh = state.path === path;
+  return { data: fresh ? state.data : null, error: fresh ? state.error : "", reload: load };
 }
 
 async function act(resource: string, body: Record<string, unknown>) {
@@ -270,8 +268,7 @@ export function ScoresSection() {
 
 export function DailySection() {
   const { data, reload } = useAdmin<{ schedule: any[]; games: string[] }>("/api/admin/daily");
-  const tomorrow = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10);
-  const [day, setDay] = useState(tomorrow);
+  const [day, setDay] = useState(() => new Date(Date.now() + 86_400_000).toISOString().slice(0, 10));
   const [game, setGame] = useState(liveGames[0]?.id ?? "");
   return (
     <div className="flex flex-col gap-4">

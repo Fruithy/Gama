@@ -38,8 +38,9 @@ export type RankTier = "world-record" | "top-10" | "top-100" | "top-1000" | "top
 export function rankTier(rank: number | null, total: number): RankTier {
   if (!rank || rank < 1) return null;
   if (rank === 1) return "world-record";
-  if (rank <= 10) return "top-10";
-  if (rank <= 100) return "top-100";
+  // Absolute tiers only mean something on a populated board.
+  if (rank <= 10 && total >= 30) return "top-10";
+  if (rank <= 100 && total >= 300) return "top-100";
   if (rank <= 1000 && total >= 2000) return "top-1000";
   const pct = rank / Math.max(1, total);
   if (pct <= 0.01 && total >= 200) return "top-1-percent";

@@ -17,6 +17,7 @@ import impossibleGrid from "./impossible-grid/meta";
 import ropeDrop from "./rope-drop/meta";
 import balanceBar from "./balance-bar/meta";
 import stackUp from "./stack-up/meta";
+import precisionCut from "./precision-cut/meta";
 import popRush from "./pop-rush/meta";
 import reactionFlash from "./reaction-flash/meta";
 import laneDodge from "./lane-dodge/meta";
@@ -50,6 +51,7 @@ const GAMES: GameDefinition[] = [
   ropeDrop,
   balanceBar,
   stackUp,
+  precisionCut,
   popRush,
   reactionFlash,
   laneDodge,

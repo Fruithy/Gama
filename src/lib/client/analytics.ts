@@ -10,7 +10,7 @@ interface QueuedEvent {
   props?: Record<string, string | number | boolean | null>;
 }
 
-let queue: QueuedEvent[] = [];
+const queue: QueuedEvent[] = [];
 let timer: ReturnType<typeof setTimeout> | null = null;
 let bound = false;
 const seenImpressions = new Set<string>();

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getGame, type GameSummary } from "@/games/registry";
 import type { GameResult, GameRuntime, HudState, PlayMode } from "@/games/core/types";
@@ -22,6 +22,8 @@ import { ResultPanel, type SubmitState } from "./ResultPanel";
 import { ShareSheet } from "./ShareSheet";
 import { PermissionGate, type PermissionState } from "./PermissionGate";
 import { PreGame } from "./PreGame";
+import { InterstitialSlot, useInterstitial } from "@/components/monetization/Interstitial";
+import { useHydrated, useReducedMotion } from "@/lib/client/hooks";
 
 type Phase = "intro" | "loading" | "permission" | "ready" | "countdown" | "playing" | "paused" | "over" | "error";
 
@@ -49,11 +51,15 @@ export function GameExperience({ game, related }: { game: GameSummary; related: 
   const [phase, setPhase] = useState<Phase>("intro");
   const [count, setCount] = useState(3);
   const [hud, setHud] = useState<HudState>({});
-  const [muted, setMuted] = useState(false);
+  // Stage UI is client-only (never SSR'd), so reading the saved preference lazily is hydration-safe.
+  const [muted, setMuted] = useState(() => (typeof window === "undefined" ? false : getAudio().muted));
   const [result, setResult] = useState<GameResult | null>(null);
   const [submit, setSubmit] = useState<SubmitState>({ state: "submitting" });
   const [armed, setArmed] = useState(false);
-  const [localBest, setLocalBest] = useState<number | null>(null);
+  const hydrated = useHydrated();
+  const reducedMotion = useReducedMotion();
+  const [localBestState, setLocalBest] = useState<number | null | undefined>(undefined);
+  const localBest = localBestState !== undefined ? localBestState : hydrated ? (getLocalBests()[game.slug] ?? null) : null;
   const [isLocalBest, setIsLocalBest] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [share, setShare] = useState<{ url: string; text: string; title: string } | null>(null);
@@ -65,6 +71,8 @@ export function GameExperience({ game, related }: { game: GameSummary; related: 
   const [showRating, setShowRating] = useState(false);
   const [cameraOn, setCameraOn] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState("");
+  const ad = useInterstitial();
+  const recordAdRun = ad.record;
 
   const stageRef = useRef<HTMLDivElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
@@ -75,21 +83,22 @@ export function GameExperience({ game, related }: { game: GameSummary; related: 
   const micRef = useRef<MicService | null>(null);
   const phaseRef = useRef<Phase>("intro");
   const timers = useRef<number[]>([]);
-  const reducedMotion = useRef(false);
+  const reducedMotionRef = useRef(false);
   const modeRef = useRef<PlayMode>("normal");
   const challengeRef = useRef<ChallengeInfo | null>(null);
   const dailySeedRef = useRef<string | null>(null);
 
-  phaseRef.current = phase;
-  modeRef.current = mode;
-  challengeRef.current = challenge;
-  dailySeedRef.current = dailySeed;
+  // Timers/async callbacks read the latest values through refs, synced right after each commit.
+  useLayoutEffect(() => {
+    phaseRef.current = phase;
+    modeRef.current = mode;
+    challengeRef.current = challenge;
+    dailySeedRef.current = dailySeed;
+    reducedMotionRef.current = reducedMotion;
+  });
 
   /* ── boot: preload this game's chunk immediately, read mode from URL ────── */
   useEffect(() => {
-    reducedMotion.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    setMuted(getAudio().muted);
-    setLocalBest(getLocalBests()[game.slug] ?? null);
     void def.load?.(); // warm the code-split game chunk while the player reads the instructions
     track("game_opened", game.id);
   }, [def, game.id, game.slug]);
@@ -203,7 +212,6 @@ export function GameExperience({ game, related }: { game: GameSummary; related: 
         poll();
       }
     }, steps.length * COUNT_STEP_MS);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [requestSession]);
 
   /* ── game over ─────────────────────────────────────────────────────────── */
@@ -211,6 +219,7 @@ export function GameExperience({ game, related }: { game: GameSummary; related: 
     async (r: GameResult) => {
       setResult(r);
       setPhase("over");
+      recordAdRun();
       later(() => setArmed(true), RESULT_ARM_MS);
       const plays = incrementPlays(game.slug);
       pushRecent(game.slug);
@@ -259,8 +268,7 @@ export function GameExperience({ game, related }: { game: GameSummary; related: 
         setSubmit({ state: "error", message: outcome.message });
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [game, requestSession, player, refresh, flags.ratings],
+    [game, requestSession, player, refresh, flags.ratings, recordAdRun],
   );
 
   /* ── mount the runtime into the stage ──────────────────────────────────── */
@@ -282,12 +290,11 @@ export function GameExperience({ game, related }: { game: GameSummary; related: 
       definition: def,
       audio: getAudio(),
       haptics,
-      reducedMotion: reducedMotion.current,
+      reducedMotion: reducedMotionRef.current,
       onHud: setHud,
       camera: cameraRef.current ?? undefined,
       mic: micRef.current ?? undefined,
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [def, handleGameOver]);
 
   const stopDevices = () => {
@@ -373,7 +380,6 @@ export function GameExperience({ game, related }: { game: GameSummary; related: 
     setHud({});
     setBoardKey((k) => k + 1);
     if (params.get("play") || params.get("mode") || params.get("challenge")) router.replace(`/games/${game.slug}`, { scroll: false });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [game.slug, params, router]);
 
   const pause = () => {
@@ -557,13 +563,14 @@ export function GameExperience({ game, related }: { game: GameSummary; related: 
                   nextGame={nextGame}
                   armed={armed}
                   showRating={showRating}
-                  reducedMotion={reducedMotion.current}
+                  reducedMotion={reducedMotion}
                   onRetry={retry}
                   onExit={exit}
                   onChallenge={() => void openChallenge()}
                   onShare={() => void openShare()}
                 />
               )}
+              {phase === "over" && ad.show && <InterstitialSlot onClose={ad.close} />}
               {errorMsg && phase !== "error" && (
                 <div className="absolute inset-x-3 bottom-[calc(12px+var(--safe-bottom))] z-40 rounded-2xl bg-sun px-4 py-3 text-sm font-semibold text-black">
                   {errorMsg} <button className="underline" onClick={() => location.reload()}>Refresh</button>

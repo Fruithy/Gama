@@ -26,11 +26,16 @@ const BLOCKED_FRAGMENTS = [
 
 const LEET: Record<string, string> = { "0": "o", "1": "i", "3": "e", "4": "a", "5": "s", "7": "t", "8": "b", "9": "g", "@": "a", $: "s", "!": "i" };
 
+/**
+ * Lowercase, de-leet and strip separators. Digits/symbols are only read as
+ * letters when they sit *inside* a word ("sh1t" → "shit"); trailing number
+ * blocks like "Raven2199" are dropped so they can't form false positives.
+ */
 export function normalizeForFilter(name: string): string {
-  return name
-    .toLowerCase()
-    .split("")
-    .map((c) => LEET[c] ?? c)
+  const chars = name.toLowerCase().split("");
+  const isLetter = (c: string | undefined) => !!c && /[a-z]/.test(c);
+  return chars
+    .map((c, i) => (LEET[c] && isLetter(chars[i - 1]) && (isLetter(chars[i + 1]) || LEET[chars[i + 1] ?? ""]) ? LEET[c] : c))
     .join("")
     .replace(/[^a-z]/g, "")
     .replace(/(.)\1{2,}/g, "$1$1");
