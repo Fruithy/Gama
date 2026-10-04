@@ -10,6 +10,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { cn } from "@/components/ui/cn";
 import { flagEmoji } from "@/lib/country";
 import { LeaderboardList } from "./LeaderboardList";
+import { authConfigured, supabaseClient } from "@/lib/client/supabase";
 
 type Tab = "global" | "today" | "week" | "country" | "friends";
 
@@ -62,6 +63,31 @@ export function LeaderboardTabs({
   useEffect(() => {
     load();
   }, [load]);
+
+  // Optional live updates via Supabase Realtime (RLS allows public reads of best tables).
+  useEffect(() => {
+    if (!authConfigured()) return;
+    let cleanup: (() => void) | undefined;
+    let cancelled = false;
+    let debounce: ReturnType<typeof setTimeout> | undefined;
+    void supabaseClient().then((sb) => {
+      if (cancelled) return;
+      const table = tab === "today" || tab === "week" ? "period_bests" : "personal_bests";
+      const channel = sb
+        .channel(`lb-${gameId}-${tab}`)
+        .on("postgres_changes", { event: "*", schema: "public", table, filter: `game_id=eq.${gameId}` }, () => {
+          clearTimeout(debounce);
+          debounce = setTimeout(() => setRetries((r) => r + 1), 1500);
+        })
+        .subscribe();
+      cleanup = () => void sb.removeChannel(channel);
+    });
+    return () => {
+      cancelled = true;
+      clearTimeout(debounce);
+      cleanup?.();
+    };
+  }, [gameId, tab]);
 
   return (
     <div>

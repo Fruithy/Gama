@@ -62,7 +62,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
         ) : (
           <FollowButton username={profile.username} initial={following} />
         )}
-        <span className="rounded-full bg-white/5 px-3 py-2 text-xs text-muted">{followers[0]?.n ?? 0} followers</span>
+        <span className="rounded-full bg-white/5 px-3 py-2 text-xs text-muted">{followers[0]?.n ?? 0} follower{(followers[0]?.n ?? 0) === 1 ? "" : "s"}</span>
         {!isMe && <div className="ml-auto"><ReportButton username={profile.username} /></div>}
       </div>
 

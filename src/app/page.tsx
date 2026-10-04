@@ -41,11 +41,11 @@ export default async function HomePage() {
           <h2 className="mb-3 font-display text-[19px] font-black uppercase">⭐ Featured Challenge</h2>
           <div className="grid grid-cols-[132px_1fr] items-center gap-4 rounded-[24px] border border-line bg-surface p-3 sm:grid-cols-[180px_1fr]">
             <GameCard game={spotlight} size="lg" plays={data.playCounts[spotlight.id]} />
-            <div>
+            <div className="min-w-0">
               <p className="font-display text-2xl font-black uppercase leading-none">{spotlight.name}</p>
               <p className="mt-2 text-sm text-muted">{spotlight.shortDescription}</p>
-              <Link href={`/games/${spotlight.slug}`} className={buttonClass("light", "md", "mt-4")}>
-                Beat the world →
+              <Link href={`/games/${spotlight.slug}`} className={buttonClass("light", "sm", "mt-4 h-11 w-full max-w-[240px] px-3 text-[13px]")}>
+                Beat the world
               </Link>
             </div>
           </div>

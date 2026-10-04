@@ -27,13 +27,15 @@ export function DailyHero({ game, players }: { game: CardGame; players: number }
           width={400}
           height={400}
           fetchPriority="high"
-          className="pointer-events-none absolute -right-10 -top-6 w-[62%] max-w-[340px] rotate-6 rounded-[32px] opacity-95 shadow-2xl sm:right-6 sm:top-6 sm:w-[300px]"
+          className="pointer-events-none absolute -right-10 -top-6 w-[62%] max-w-[340px] rotate-6 rounded-[32px] opacity-90 shadow-2xl sm:right-6 sm:top-6 sm:w-[300px]"
         />
+        {/* Keeps the headline readable over the artwork on narrow screens. */}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent sm:bg-gradient-to-r sm:from-black/60 sm:via-transparent" />
         <div className="relative flex min-h-[300px] flex-col justify-end p-5 sm:min-h-[340px] sm:p-8">
           <span className="mb-2 inline-flex w-fit items-center gap-1.5 rounded-full bg-black/50 px-3 py-1 text-[11px] font-black uppercase tracking-widest text-volt backdrop-blur">
             <span className="h-2 w-2 animate-pulse rounded-full bg-volt" /> Daily Challenge
           </span>
-          <h2 className="font-display text-5xl font-black uppercase leading-[0.9] text-white drop-shadow-lg sm:text-6xl">{game.name}</h2>
+          <h2 className={`font-display font-black uppercase leading-[0.9] text-white drop-shadow-lg ${game.name.length > 10 ? "text-[40px] sm:text-6xl" : "text-5xl sm:text-6xl"}`}>{game.name}</h2>
           <p className="mt-2 max-w-[60%] text-sm text-white/80">{game.shortDescription}</p>
           <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-white/80">
             <span>

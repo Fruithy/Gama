@@ -460,9 +460,9 @@ export function GameExperience({ game, related }: { game: GameSummary; related: 
 
       {stageOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black" style={{ touchAction: "none" }}>
-          {/* Phone-shaped stage: full screen on phones, centred 9:17 on desktop */}
+          {/* Phone-shaped stage: full screen on portrait phones, letterboxed portrait on landscape, centred 9:17 on desktop */}
           <div
-            className="relative h-full w-full overflow-hidden md:aspect-[9/17] md:h-[min(92dvh,900px)] md:w-auto md:rounded-[36px] md:border md:border-white/10 md:shadow-2xl"
+            className="relative h-dvh w-[min(100vw,calc(100dvh*0.6))] overflow-hidden md:aspect-[9/17] md:h-[min(92dvh,900px)] md:w-auto md:rounded-[36px] md:border md:border-white/10 md:shadow-2xl"
             style={{ background: `linear-gradient(${game.theme.bg[0]}, ${game.theme.bg[1]})` }}
           >
               <div ref={stageRef} className="absolute inset-0" data-testid="game-stage" />
