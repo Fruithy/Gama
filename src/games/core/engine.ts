@@ -171,13 +171,14 @@ export abstract class CanvasGame implements GameRuntime {
    * End the run. With `slowMo`, the world keeps animating at reduced speed for
    * `delayMs` before the platform is told — the "almost made it" beat.
    */
-  protected finish(opts: { completed?: boolean; reason?: string; delayMs?: number; slowMo?: boolean } = {}) {
+  protected finish(opts: { completed?: boolean; reason?: string; delayMs?: number; slowMo?: boolean; ranked?: boolean } = {}) {
     if (this.state !== "running") return;
     this.checkpoint();
     const result: GameResult = {
       score: this.score,
       completed: opts.completed ?? true,
       reason: opts.reason,
+      ranked: opts.ranked ?? true,
       metadata: this.getRunMetadata(),
     };
     this.pendingResult = result;

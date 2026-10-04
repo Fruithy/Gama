@@ -117,6 +117,11 @@ class AudioEngine implements AudioApi {
     );
   }
 
+  toneAt(freq: number, when: number, durationMs: number, opts: { type?: OscillatorType; volume?: number } = {}) {
+    if (this._muted || !this.ctx) return;
+    this.voice({ type: opts.type ?? "triangle", f0: freq, dur: durationMs / 1000, vol: 0.18 }, 1, opts.volume ?? 1, Math.max(0, when - this.ctx.currentTime));
+  }
+
   private voice(v: Voice, pitch: number, volume: number, delay: number) {
     const ctx = this.ctx!;
     const t0 = ctx.currentTime + delay;

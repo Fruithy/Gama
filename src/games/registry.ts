@@ -17,6 +17,28 @@ import impossibleGrid from "./impossible-grid/meta";
 import ropeDrop from "./rope-drop/meta";
 import balanceBar from "./balance-bar/meta";
 import stackUp from "./stack-up/meta";
+import popRush from "./pop-rush/meta";
+import reactionFlash from "./reaction-flash/meta";
+import laneDodge from "./lane-dodge/meta";
+import platformHop from "./platform-hop/meta";
+import flappyCritter from "./flappy-critter/meta";
+import gravityFlip from "./gravity-flip/meta";
+import keepItUp from "./keep-it-up/meta";
+import targetShot from "./target-shot/meta";
+import basketFlick from "./basket-flick/meta";
+import memoryFlash from "./memory-flash/meta";
+import oddOneOut from "./odd-one-out/meta";
+import emojiMatch from "./emoji-match/meta";
+import pathDraw from "./path-draw/meta";
+import physicsDrop from "./physics-drop/meta";
+import perfectHold from "./perfect-hold/meta";
+import quickMath from "./quick-math/meta";
+import fallingDodge from "./falling-dodge/meta";
+import catchRush from "./catch-rush/meta";
+import headCatch from "./head-catch/meta";
+import blinkJump from "./blink-jump/meta";
+import rhythmTap from "./rhythm-tap/meta";
+import perfectPitch from "./perfect-pitch/meta";
 
 const GAMES: GameDefinition[] = [
   perfectTap,
@@ -28,6 +50,28 @@ const GAMES: GameDefinition[] = [
   ropeDrop,
   balanceBar,
   stackUp,
+  popRush,
+  reactionFlash,
+  laneDodge,
+  platformHop,
+  flappyCritter,
+  gravityFlip,
+  keepItUp,
+  targetShot,
+  basketFlick,
+  memoryFlash,
+  oddOneOut,
+  emojiMatch,
+  pathDraw,
+  physicsDrop,
+  perfectHold,
+  quickMath,
+  fallingDodge,
+  catchRush,
+  headCatch,
+  blinkJump,
+  rhythmTap,
+  perfectPitch,
 ];
 
 /* ───────────────────────────── lookups ───────────────────────────── */

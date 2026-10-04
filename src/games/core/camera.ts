@@ -73,8 +73,9 @@ export class CameraService implements CameraApi {
     this.centre.calibrated = false;
   }
 
-  async startTracking(onStatus?: (s: TrackerStatus) => void) {
-    if (this.status === "loading" || this.status === "ready") return;
+  /** Loads the face model (first time only) and starts tracking. Resolves with the final status. */
+  async startTracking(onStatus?: (s: TrackerStatus) => void): Promise<TrackerStatus> {
+    if (this.status === "loading" || this.status === "ready") return this.status;
     this.status = "loading";
     onStatus?.(this.status);
     try {
@@ -86,7 +87,7 @@ export class CameraService implements CameraApi {
         numFaces: 1,
         outputFaceBlendshapes: true,
       })) as unknown as Landmarker;
-      if (this.stopped) return;
+      if (this.stopped) return this.status;
       this.status = "ready";
       onStatus?.(this.status);
       this.loop();
@@ -95,6 +96,7 @@ export class CameraService implements CameraApi {
       this.status = "failed";
       onStatus?.(this.status);
     }
+    return this.status;
   }
 
   private loop = () => {

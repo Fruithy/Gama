@@ -64,6 +64,7 @@ export function GameExperience({ game, related }: { game: GameSummary; related: 
   const [boardKey, setBoardKey] = useState(0);
   const [showRating, setShowRating] = useState(false);
   const [cameraOn, setCameraOn] = useState(false);
+  const [loadingMsg, setLoadingMsg] = useState("");
 
   const stageRef = useRef<HTMLDivElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
@@ -214,14 +215,15 @@ export function GameExperience({ game, related }: { game: GameSummary; related: 
       const plays = incrementPlays(game.slug);
       pushRecent(game.slug);
       setShowRating(flags.ratings && plays >= RATING_AFTER_PLAYS && !wasRated(game.slug));
-      const rankable = game.scoreDirection === "higher" || r.completed;
+      const practice = r.ranked === false;
+      const rankable = !practice && (game.scoreDirection === "higher" || r.completed);
       let localPb = false;
       if (rankable) {
         const prev = getLocalBests()[game.slug] ?? null;
         localPb = recordLocalBest(game.slug, r.score, game.scoreDirection);
         setIsLocalBest(localPb && prev !== null);
         setLocalBest(localPb ? r.score : prev);
-      } else {
+      } else if (!practice) {
         track("game_failed", game.id, { reason: r.reason ?? "fail" });
       }
       if (localPb) {
@@ -233,7 +235,10 @@ export function GameExperience({ game, related }: { game: GameSummary; related: 
 
       const session = sessionRef.current;
       if (!rankable) {
-        setSubmit({ state: "unranked", message: "Runs that end early don't count. Try again!" });
+        setSubmit({
+          state: "unranked",
+          message: practice ? "Practice mode (touch controls) — not ranked. Allow the camera/mic to compete." : "Runs that end early don't count. Try again!",
+        });
         return;
       }
       if (!session) {
@@ -321,7 +326,12 @@ export function GameExperience({ game, related }: { game: GameSummary; related: 
         cameraRef.current = outcome.camera;
         previewRef.current?.appendChild(outcome.camera.video);
         setCameraOn(true);
-        void outcome.camera.startTracking();
+        // Wait for the on-device face model before the countdown so the first seconds are playable.
+        setPhase("loading");
+        setLoadingMsg("Loading face tracking…");
+        const status = await outcome.camera.startTracking();
+        setLoadingMsg("");
+        if (status === "failed") setErrorMsg("Face tracking isn't available on this device — touch practice mode instead.");
       }
       if (outcome.mic) micRef.current = outcome.mic;
       if (outcome.denied) track(game.usesCamera ? "camera_denied" : "mic_denied", game.id);
@@ -487,7 +497,12 @@ export function GameExperience({ game, related }: { game: GameSummary; related: 
                 </div>
               </div>
 
-              {phase === "loading" && <Overlay><div className="h-14 w-14 animate-spin rounded-full border-4 border-white/20 border-t-volt" aria-label="Loading" /></Overlay>}
+              {phase === "loading" && (
+                <Overlay>
+                  <div className="h-14 w-14 animate-spin rounded-full border-4 border-white/20 border-t-volt" aria-label="Loading" />
+                  {loadingMsg && <p className="mt-4 text-sm font-semibold text-white/85">{loadingMsg}</p>}
+                </Overlay>
+              )}
 
               {phase === "ready" && (
                 <Overlay>

@@ -32,6 +32,7 @@ const SPECS: PlannedSpec[] = [
   { slug: "traffic-gap", name: "Traffic Gap", category: "timing", desc: "Cross when the gap opens. Not before.", controls: ["tap"], glyph: "▶", bg: ["#1d1d1d", "#d4ff3a"] },
   { slug: "sound-guess", name: "Sound Guess", category: "rhythm", desc: "Name that noise in one second.", controls: ["tap"], glyph: "♪?", bg: ["#0f1f3d", "#3dd8ff"] },
   { slug: "say-on-beat", name: "Say On Beat", category: "rhythm", desc: "Say the word exactly on the beat.", controls: ["voice"], glyph: "♫", bg: ["#3d0f3a", "#ff3d7f"], mic: true },
+  { slug: "face-paddle", name: "Face Paddle", category: "camera", desc: "Steer the paddle with your face. Keep the rally alive.", controls: ["head"], glyph: "▬", bg: ["#0f2a3d", "#3dd8ff"], camera: true },
   { slug: "head-maze", name: "Head Maze", category: "camera", desc: "Steer through a maze with your head.", controls: ["head"], glyph: "◎", bg: ["#0f3d3a", "#3dffb0"], camera: true },
   { slug: "header-challenge", name: "Header Challenge", category: "camera", desc: "Head the ball. Keep it up.", controls: ["head"], glyph: "⚽", bg: ["#123d0f", "#d4ff3a"], camera: true },
   { slug: "goal-timing", name: "Goal Timing", category: "sports", desc: "Shoot when the keeper blinks.", controls: ["tap"], glyph: "GOAL", bg: ["#0f3d16", "#3dffb0"] },

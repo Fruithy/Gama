@@ -1,0 +1,45 @@
+import { defineGame } from "../core/define";
+
+export const BALANCE = {
+  durationS: 30,
+  startSpawnS: 0.75,
+  minSpawnS: 0.32,
+  startLifeS: 2.0,
+  minLifeS: 0.85,
+  startRadius: 44,
+  minRadius: 24,
+  maxAlive: 6,
+  bombChance: 0.14,
+  goldChance: 0.05,
+  missPenaltyS: 1,
+  bombPenaltyS: 3,
+  goldBonusS: 2,
+};
+
+export default defineGame({
+  slug: "pop-rush",
+  name: "Pop Rush",
+  shortDescription: "Pop everything. Except the spiky ones.",
+  instructions: "Tap the bubbles before they vanish. Don't tap the spiky bombs.",
+  howTo: ["Faster pops score more.", "Missing the screen costs 1 second. Bombs cost 3.", "Golden bubbles add time."],
+  category: "reaction",
+  tags: ["arcade"],
+  difficulty: "easy",
+  controls: ["tap"],
+  estimatedDuration: 30,
+  scoreUnit: "pts",
+  trending: true,
+  theme: { bg: ["#0d2a0f", "#3a9c2f"], accent: "#d4ff3a", ink: "#ffffff" },
+  validation: {
+    minDurationMs: 5_000,
+    maxDurationMs: 5 * 60_000,
+    maxScore: 8_000,
+    maxScorePerSecond: 130,
+    maxActionsPerSecond: 10,
+    maxScorePerAction: 45,
+    monotonicCheckpoints: true,
+  },
+  milestones: { good: 600, great: 1100, legendary: 1800 },
+  load: () => import("./game"),
+  art: () => import("./art"),
+});

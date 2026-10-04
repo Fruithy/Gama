@@ -196,6 +196,11 @@ export interface GameResult {
   completed: boolean;
   /** Short reason shown on the result screen ("TOO EARLY", "OUT OF TIME"). */
   reason?: string;
+  /**
+   * false = practice run that must never reach a leaderboard (e.g. a camera
+   * game played with the touch fallback, which is easier than the real input).
+   */
+  ranked?: boolean;
   metadata: RunMetadata;
 }
 
@@ -209,6 +214,8 @@ export interface AudioApi {
   /** Generic synth note. `pitch` multiplies frequency for variation. */
   play(sound: SoundName, opts?: { pitch?: number; volume?: number }): void;
   tone(freq: number, durationMs: number, opts?: { type?: OscillatorType; volume?: number; delayMs?: number }): void;
+  /** Schedule a tone at an absolute AudioContext time (rhythm games). */
+  toneAt(freq: number, when: number, durationMs: number, opts?: { type?: OscillatorType; volume?: number }): void;
   /** Underlying context (rhythm games schedule against its clock). */
   context(): AudioContext | null;
   /** Rough 0..1 tension level for progressive audio intensity. */
