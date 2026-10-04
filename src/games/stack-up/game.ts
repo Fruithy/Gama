@@ -33,7 +33,7 @@ class StackUp extends CanvasGame {
   private dropFlash = 0;
 
   private get baseY() {
-    return this.h - 110;
+    return Math.min(this.h - 110, this.h * 0.74);
   }
 
   protected setup() {

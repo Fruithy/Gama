@@ -6,7 +6,16 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "db:migrate": "tsx scripts/db.ts migrate",
+    "db:seed": "tsx scripts/db.ts seed",
+    "db:unseed": "tsx scripts/db.ts unseed",
+    "db:reset": "tsx scripts/db.ts reset",
+    "new-game": "tsx scripts/new-game.ts"
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.5.8",

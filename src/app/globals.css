@@ -1,26 +1,158 @@
 @import "tailwindcss";
 
+/* ───────────────────────── FILTER ARCADE design tokens ───────────────────────── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #0a0a0c;
+  --surface: #131317;
+  --surface-2: #1b1b21;
+  --surface-3: #24242c;
+  --line: rgba(255, 255, 255, 0.08);
+  --line-strong: rgba(255, 255, 255, 0.16);
+  --text: #f5f5f7;
+  --muted: #9a9aa6;
+  --faint: #5d5d68;
+  --volt: #d4ff3a;
+  --flare: #ff3d7f;
+  --ion: #3dd8ff;
+  --sun: #ffc23d;
+  --violet: #8b5cff;
+  --mint: #3dffb0;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  color-scheme: dark;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-volt: var(--volt);
+  --color-flare: var(--flare);
+  --color-ion: var(--ion);
+  --color-sun: var(--sun);
+  --color-violet: var(--violet);
+  --color-mint: var(--mint);
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display), "Arial Black", Impact, sans-serif;
+  --radius-card: 22px;
+  --animate-rise: rise 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+  --animate-pop: pop 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.4) both;
+  --animate-shimmer: shimmer 1.4s linear infinite;
+  --animate-float: float 3s ease-in-out infinite;
+  --animate-pulse-ring: pulse-ring 1.8s ease-out infinite;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes pop {
+  0% { opacity: 0; transform: scale(0.6); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes shimmer {
+  from { background-position: -200% 0; }
+  to { background-position: 200% 0; }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 rgba(212, 255, 58, 0.55); }
+  100% { box-shadow: 0 0 0 22px rgba(212, 255, 58, 0); }
+}
+
+html {
+  background: var(--bg);
+  -webkit-tap-highlight-color: transparent;
+  text-size-adjust: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  min-height: 100dvh;
+  overscroll-behavior-y: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Gameplay lock: no scroll, no rubber-banding, no text selection. */
+body.game-lock {
+  overflow: hidden;
+  touch-action: none;
+  overscroll-behavior: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.font-display {
+  font-family: var(--font-display), "Arial Black", Impact, sans-serif;
+  letter-spacing: -0.02em;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Horizontal game rails */
+.rail {
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+.rail::-webkit-scrollbar { display: none; }
+.rail > * { scroll-snap-align: start; }
+
+.skeleton {
+  background: linear-gradient(90deg, var(--surface-2) 0%, var(--surface-3) 50%, var(--surface-2) 100%);
+  background-size: 200% 100%;
+  animation: var(--animate-shimmer);
+}
+
+/* Tactile press feedback for anything interactive */
+.press {
+  transition: transform 0.12s cubic-bezier(0.3, 0.7, 0.4, 1.5), filter 0.12s, background-color 0.15s, border-color 0.15s;
+}
+.press:active { transform: scale(0.95); filter: brightness(1.1); }
+
+.noise::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.06;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/></filter><rect width='120' height='120' filter='url(%23n)'/></svg>");
+  mix-blend-mode: overlay;
+  border-radius: inherit;
+}
+
+.text-gradient-volt {
+  background: linear-gradient(100deg, var(--volt), var(--ion));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+:focus-visible {
+  outline: 3px solid var(--volt);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
