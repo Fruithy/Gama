@@ -15,11 +15,11 @@ const TABS = [
   { href: "/me", label: "You", icon: "👤", match: (p: string) => p.startsWith("/me") || p.startsWith("/u/") },
 ];
 
-/** Top bar (all sizes) + bottom tab bar (phones). Hidden on admin routes. */
+/** Top bar (all sizes) + bottom tab bar (phones). Hidden on admin routes and the full-screen idle game. */
 export function AppChrome() {
   const pathname = usePathname() ?? "/";
   const { player } = usePlayer();
-  if (pathname.startsWith("/admin")) return null;
+  if (pathname.startsWith("/admin") || pathname.startsWith("/mine")) return null;
   return (
     <>
       <header className="sticky top-0 z-30 border-b border-line bg-bg/80 pt-[var(--safe-top)] backdrop-blur-xl">

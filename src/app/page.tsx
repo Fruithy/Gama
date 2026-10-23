@@ -5,6 +5,7 @@ import { GameCard } from "@/components/game/GameCard";
 import { toCard, type CardGame } from "@/components/game/types";
 import { DailyHero } from "@/components/home/DailyHero";
 import { PersonalRails } from "@/components/home/PersonalRails";
+import { IdlePromo } from "@/components/home/IdlePromo";
 import { buttonClass } from "@/components/ui/Button";
 import Link from "next/link";
 
@@ -51,6 +52,8 @@ export default async function HomePage() {
           </div>
         </section>
       )}
+
+      <IdlePromo />
 
       <GameRail title="Trending Now" emoji="🔥" games={trendingCards} plays={data.playCounts} href="/games?sort=trending" />
       <GameRail title="Quick Games" emoji="⚡" games={inCat("quick")} plays={data.playCounts} href="/games/quick" subtitle="Under 20 seconds. One more try." size="sm" />

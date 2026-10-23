@@ -10,6 +10,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${base}/`, changeFrequency: "daily", priority: 1, lastModified: now },
     { url: `${base}/games`, changeFrequency: "daily", priority: 0.9, lastModified: now },
     { url: `${base}/daily`, changeFrequency: "daily", priority: 0.9, lastModified: now },
+    { url: `${base}/mine`, changeFrequency: "weekly", priority: 0.8, lastModified: now },
     ...CATEGORIES.map((c) => ({ url: `${base}/games/${c.slug}`, changeFrequency: "weekly" as const, priority: 0.7, lastModified: now })),
     ...liveGames.flatMap((g) => [
       { url: `${base}/games/${g.slug}`, changeFrequency: "weekly" as const, priority: 0.8, lastModified: now },
