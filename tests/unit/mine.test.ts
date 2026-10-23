@@ -176,6 +176,8 @@ describe("Neon Rig session", () => {
 describe("Neon Rig formatting", () => {
   it("abbreviates idle-sized numbers", () => {
     expect(fmt(0)).toBe("0");
+    expect(fmt(0.097)).toBe("0.09");
+    expect(fmt(0.5)).toBe("0.5");
     expect(fmt(7.25)).toBe("7.2");
     expect(fmt(999)).toBe("999");
     expect(fmt(1234)).toBe("1.23K");

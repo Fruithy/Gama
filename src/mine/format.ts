@@ -15,6 +15,7 @@ export function fmt(n: number, digits = 3): string {
   if (n < 0) return `-${fmt(-n, digits)}`;
   if (n < 1000) {
     if (n === 0) return "0";
+    if (n < 1) return (Math.floor(n * 100) / 100).toFixed(2).replace(/0$/, "");
     if (n < 10) return (Math.floor(n * 10) / 10).toFixed(1).replace(/\.0$/, "");
     return Math.floor(n).toString();
   }
